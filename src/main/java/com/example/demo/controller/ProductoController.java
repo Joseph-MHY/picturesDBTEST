@@ -3,13 +3,19 @@ package com.example.demo.controller;
 import com.example.demo.Service.ProductoService;
 import com.example.demo.model.Producto;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.core.io.Resource;
+import org.springframework.core.io.UrlResource;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.MissingServletRequestParameterException;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
+import java.net.MalformedURLException;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.Collection;
 import java.util.UUID;
 
@@ -31,22 +37,35 @@ public class ProductoController {
         }
     }
 
-    @GetMapping("/{id}")
-    public ResponseEntity<byte[]> getProductoImagen(@PathVariable Long id) {
+    @GetMapping("/imagen/{id}")
+    public ResponseEntity<Resource> getProductoImagen(@PathVariable Long id) {
         try {
             Producto producto = productoService.getProducto(id);
-            String nombreImagen = producto.getNombre() + "-" + UUID.randomUUID() + ".webp"; // Utiliza el nombre del producto como nombre de la imagen
-            return ResponseEntity.ok()
-                    .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=\"" + nombreImagen + "\"")
-                    .body(producto.getImagen());
-        } catch (Exception e) {
+            System.out.println(producto.getId() + "\n" + producto.getNameProducto() + "\n" + producto.getImagen());
+            Path imagePath = Paths.get("src/main/resources/static" + producto.getImagen());
+            Resource resource = new UrlResource(imagePath.toUri());
+
+            if (resource.exists() || resource.isReadable()){
+                System.out.println("imagen disponible");
+                return ResponseEntity.ok()
+                        .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=\"" + resource.getFilename() + "\"")
+                        .body(resource);
+            } else {
+                System.out.println("imagen no disponible");
+                return ResponseEntity.notFound().build();
+            }
+        } catch (MalformedURLException e) {
             return new ResponseEntity<>(HttpStatus.NOT_FOUND);
         }
     }
 
     @GetMapping
-    public ResponseEntity<Collection<Producto>> getAllProductos() {
-        Collection<Producto> productos = productoService.getAllProductos();
-        return new ResponseEntity<>(productos, HttpStatus.OK);
+    public Collection<Producto> getAllProductos() {
+        return productoService.getAllProductos();
+    }
+
+    @GetMapping("/{id}")
+    public Producto getProducto(@PathVariable Long id) {
+        return productoService.getProducto(id);
     }
 }

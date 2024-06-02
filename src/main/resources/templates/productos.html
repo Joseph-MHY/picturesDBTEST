@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Lista de Productos</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f4f4f4;
+            padding: 20px;
+        }
+        .container {
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 0 10px rgba(0,0,0,0.1);
+            max-width: 800px;
+            margin: 0 auto;
+        }
+        h1 {
+            text-align: center;
+            color: #333;
+        }
+        .producto {
+            margin-bottom: 20px;
+            padding: 20px;
+            background: #f9f9f9;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        .producto img {
+            max-width: 100%;
+            max-height: 200px; /* Establece la altura máxima de la imagen */
+            border-radius: 4px;
+            display: block; /* Asegura que la imagen esté alineada correctamente */
+            margin: 0 auto; /* Centra la imagen horizontalmente */
+        }
+        .producto h2 {
+            margin-top: 0;
+            color: #333;
+        }
+    </style>
+    <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+</head>
+<body>
+<div class="container">
+    <h1>Lista de Productos</h1>
+    <div id="productos"></div>
+</div>
+
+<script>
+    axios.get('http://localhost:8080/productos')
+        .then(response => {
+            const productos = response.data;
+            console.log(response.data)
+            const productosContainer = document.getElementById('productos');
+
+            productos.forEach(producto => {
+                const productoDiv = document.createElement('div');
+                productoDiv.classList.add('producto');
+
+                const nombreHeading = document.createElement('h2');
+                nombreHeading.textContent = producto.nameProducto;
+
+                const imagen = document.createElement('img');
+                imagen.src = `http://localhost:8080${producto.imagen}`; // Cargar la imagen desde la ruta
+
+                productoDiv.appendChild(nombreHeading);
+                productoDiv.appendChild(imagen);
+
+                productosContainer.appendChild(productoDiv);
+            });
+        })
+        .catch(error => {
+            console.error('Error:', error);
+        });
+</script>
+</body>
+</html>
